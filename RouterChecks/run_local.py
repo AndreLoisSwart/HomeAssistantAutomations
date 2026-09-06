@@ -1,27 +1,16 @@
 import asyncio
 from firmware_logic import check_firmware_mismatch
-from pathlib import Path
-import yaml
+from speed_test_logic import (
+    get_speed_test_data,
+    build_speedtest_config,
+    trigger_speed_test,
+)
+from router_helpers import get_secrets
 
 
-def get_secrets(path: str | Path) -> dict:
-    path = Path(path)
-
-    if not path.exists():
-        raise FileNotFoundError(f"Fine, keep your secrets: {path}")
-
-    with open(path) as f:
-        secrets = yaml.safe_load(f)
-
-    if not isinstance(secrets, dict):
-        raise TypeError(f"Expected a YAML mapping in {path}, but got {type(secrets)}")
-
-    return secrets
-
-
-def main():
+def main_firmware_logic():
     secrets = get_secrets(
-        "C:\\Github\\HomeAssistantAutomations\\RouterFirmwareCheck\\secrets.yaml"
+        "C:\\Github\\HomeAssistantAutomations\\RouterChecks\\secrets.yaml"
     )
     check = asyncio.run(
         check_firmware_mismatch(
@@ -32,6 +21,34 @@ def main():
     )
 
     print(check)
+
+
+def main_speed_test_logic():
+    secrets = get_secrets(
+        "C:\\Github\\HomeAssistantAutomations\\RouterChecks\\secrets.yaml"
+    )
+
+    config = build_speedtest_config(
+        secrets["asus_router_host"],
+        secrets["asus_router_username"],
+        secrets["asus_router_password"],
+    )
+    asyncio.run(trigger_speed_test(config))
+
+    data = asyncio.run(
+        get_speed_test_data(
+            secrets["asus_router_host"],
+            secrets["asus_router_username"],
+            secrets["asus_router_password"],
+        )
+    )
+
+    print(data)
+
+
+def main():
+    # main_firmware_logic()  ## Run to test firmware logic
+    main_speed_test_logic()  ## Run to test speed test logic
 
 
 if __name__ == "__main__":

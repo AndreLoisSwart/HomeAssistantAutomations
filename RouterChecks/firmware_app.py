@@ -4,7 +4,6 @@ from firmware_logic import check_firmware_mismatch
 
 class FirmwareCheck(hass.Hass):
     def initialize(self):
-        print("FIRMWARE_CHECK: initialize() called")
         self.debug = self.args.get("debug", False)
         self.notify_target = self.args.get("notify_target")
         interval = self.args.get("check_interval_seconds", 3600)
@@ -32,7 +31,7 @@ class FirmwareCheck(hass.Hass):
             mac: {"type": info.device_type, "fw": info.fw}
             for mac, info in result.device_info.items()
         }
-        self.set_state(
+        new_state = await self.set_state(
             "sensor.aimesh_firmware_status",
             state="mismatch" if result.mismatch else "ok",
             attributes={
@@ -41,6 +40,7 @@ class FirmwareCheck(hass.Hass):
                 "error": None,
             },
         )
+        self.log(f"set_state returned: {new_state}", level="INFO")
 
         if result.mismatch:
             lines = [
@@ -51,6 +51,6 @@ class FirmwareCheck(hass.Hass):
             if self.debug:
                 self.log(message, level="INFO")
             elif self.notify_target:
-                self.notify(
+                await self.notify(
                     message, title="AiMesh firmware mismatch", name=self.notify_target
                 )
