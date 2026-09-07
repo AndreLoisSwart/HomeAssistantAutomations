@@ -1,7 +1,8 @@
 import asyncio
-import aiohttp
-from asusrouter import AsusRouter, AsusData
 from typing import NamedTuple
+
+import aiohttp
+from asusrouter import AsusData, AsusRouter
 
 
 class DeviceInfo(NamedTuple):

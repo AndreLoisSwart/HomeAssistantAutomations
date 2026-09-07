@@ -1,17 +1,22 @@
 import asyncio
+
 from firmware_logic import check_firmware_mismatch
-from speed_test_logic import (
-    get_speed_test_data,
-    build_speedtest_config,
-    trigger_speed_test,
-)
 from router_helpers import get_secrets
+from speed_test_logic import (
+    build_speedtest_config,
+    get_speed_test_data,
+    trigger_speed_test,
+    parse_speedtest_result,
+)
+
+PATH_HOME = "C:\\Github\\HomeAssistantAutomations\\RouterChecks\\secrets.yaml"
+PATH_WORK = "C:\\Andre\\HomeAssistantAutomations\\RouterChecks\\secrets.yaml"
+
+PATH = PATH_WORK
 
 
 def main_firmware_logic():
-    secrets = get_secrets(
-        "C:\\Github\\HomeAssistantAutomations\\RouterChecks\\secrets.yaml"
-    )
+    secrets = get_secrets(PATH)
     check = asyncio.run(
         check_firmware_mismatch(
             secrets["asus_router_host"],
@@ -24,9 +29,7 @@ def main_firmware_logic():
 
 
 def main_speed_test_logic():
-    secrets = get_secrets(
-        "C:\\Github\\HomeAssistantAutomations\\RouterChecks\\secrets.yaml"
-    )
+    secrets = get_secrets(PATH)
 
     config = build_speedtest_config(
         secrets["asus_router_host"],
@@ -43,7 +46,7 @@ def main_speed_test_logic():
         )
     )
 
-    print(data)
+    print(parse_speedtest_result(data))
 
 
 def main():
